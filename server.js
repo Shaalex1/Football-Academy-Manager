@@ -1317,6 +1317,11 @@ app.put("/api/settings/password", async (req, res) => {
   });
 });
 
+// Serve index.html for root and any unmatched routes (for SPA routing)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'front-end', 'index.html'));
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port : ${port}`);
 });
