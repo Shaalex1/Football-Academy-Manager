@@ -1297,28 +1297,28 @@ app.get("/api/statistics", async (req, res) => {
 
 app.put("/api/settings/password", async (req, res) => {
   const { playerId, currentPassword, newPassword } = req.body;
-  
+
   return withConnection(async (conn) => {
     const rows = await conn.query(
       "SELECT * FROM player WHERE player_id = ? AND password = ?",
       [playerId, currentPassword]
     );
-    
+
     if (rows.length === 0) {
       return res.status(401).json({ success: false, message: "Current password is incorrect" });
     }
-    
+
     await conn.query(
       "UPDATE player SET password = ? WHERE player_id = ?",
       [newPassword, playerId]
     );
-    
+
     res.json({ success: true });
   });
 });
 
-// Serve index.html for root and any unmatched routes (for SPA routing)
-app.get('*', (req, res) => {
+// Serve index.html for any non-API routes
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'front-end', 'index.html'));
 });
 
