@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Academy Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="auth-wrapper">
+      <div class="league-logo">
+        <div class="league-logo-icon"></div>
+        <div class="league-logo-text">
+          <div class="main">Fall 2025 League</div>
+          <div class="sub">Football Championship</div>
+        </div>
+      </div>
+
+      <div class="auth-badge">
+        <span class="auth-badge-dot"></span>
+        Unified Access Portal
+      </div>
+      <h1 class="auth-title">
+        <span class="accent">Welcome</span> Back
+      </h1>
+      <p class="auth-subtitle">
+        Sign in as admin or player, or sign up as a new player.
+      </p>
+
+      <div class="auth-mode-toggle">
+        <button id="mode-admin-login-btn" class="mode-btn active" type="button">
+          Admin Login
+        </button>
+        <button id="mode-player-login-btn" class="mode-btn" type="button">
+          Player Login
+        </button>
+        <button id="mode-player-signup-btn" class="mode-btn" type="button">
+          Player Sign Up
+        </button>
+      </div>
+
+      <!-- Unified Login Form -->
+      <form id="unified-login-form" class="auth-form" autocomplete="off" novalidate>
+        <div class="auth-field-group">
+          <label for="login-email">Email</label>
+          <input
+            id="login-email"
+            class="input"
+            type="email"
+            placeholder="admin@academy.com or your email"
+            required
+          />
+        </div>
+
+        <div class="auth-field-group">
+          <label for="login-password">Password</label>
+          <input
+            id="login-password"
+            class="input"
+            type="password"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn-primary">
+          <span class="btn-primary-icon">→</span>
+          <span id="login-submit-text">Sign In (Admin)</span>
+        </button>
+        <div id="login-error" class="error-text"></div>
+      </form>
+
+      <!-- Player Sign Up Form -->
+      <form id="player-signup-form" class="auth-form hidden" autocomplete="off" novalidate>
+        <div class="auth-field-group">
+          <label for="signup-firstname">First Name</label>
+          <input id="signup-firstname" class="input" type="text" placeholder="John" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-lastname">Last Name</label>
+          <input id="signup-lastname" class="input" type="text" placeholder="Doe" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-email">Email</label>
+          <input
+            id="signup-email"
+            class="input"
+            type="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-password">Password</label>
+          <input
+            id="signup-password"
+            class="input"
+            type="password"
+            placeholder="Create a password"
+            required
+          />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-age">Age</label>
+          <input id="signup-age" class="input" type="number" min="12" max="40" placeholder="18" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-position">Preferred position</label>
+          <input
+            id="signup-position"
+            class="input"
+            type="text"
+            placeholder="Midfielder"
+            required
+          />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-height">Height (cm)</label>
+          <input id="signup-height" class="input" type="number" min="140" max="220" placeholder="178" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-weight">Weight (kg)</label>
+          <input id="signup-weight" class="input" type="number" min="40" max="110" placeholder="72" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-nationality">Nationality</label>
+          <input id="signup-nationality" class="input" type="text" placeholder="Lebanese" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-shirt-number">Shirt Number</label>
+          <input id="signup-shirt-number" class="input" type="number" min="1" max="99" placeholder="10" required />
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-injury">Injury status</label>
+          <select id="signup-injury" class="select-input" required>
+            <option value="">Choose...</option>
+            <option value="none">No limiting injury</option>
+            <option value="injured">Has major injury</option>
+          </select>
+        </div>
+        <div class="auth-field-group">
+          <label for="signup-fitness">Fitness test (beep level)</label>
+          <input
+            id="signup-fitness"
+            class="input"
+            type="number"
+            min="1"
+            max="20"
+            placeholder="8"
+            required
+          />
+        </div>
+        <button type="submit" class="btn-primary">
+          <span class="btn-primary-icon">→</span>
+          <span>Sign Up & Check Eligibility</span>
+        </button>
+        <div id="signup-error" class="error-text"></div>
+      </form>
+
+      <div class="auth-footer">
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.75rem;">
+          <div>
+            <span class="auth-footer-hint">Default Admin:</span>
+            <span class="auth-footer-cred">
+              <span>admin@academy.com</span> / <span>123456</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" class="hidden">
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo-row">
+            <div class="logo-circle">⚽</div>
+            <div class="logo-text">
+              <span class="title">Fall 2025</span>
+              <span id="logo-subtitle" class="subtitle">League Admin</span>
+            </div>
+          </div>
+          <div class="user-chip">
+            <span class="user-chip-dot"></span>
+            <span id="logged-user-email">Logged in</span>
+          </div>
+        </div>
+
+        <!-- ADMIN MENU -->
+        <div>
+          <div class="nav-section-title">Overview</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main active" data-view="dashboard">
+              <span class="icon">📊</span>
+              <span class="label">Dashboard</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="nav-section-title">Academy</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="players">
+              <span class="icon">🧑‍💼</span>
+              <span class="label">Players</span>
+            </button>
+            <button class="nav-button nav-button-main" data-view="teams">
+              <span class="icon">🛡️</span>
+              <span class="label">Teams</span>
+            </button>
+            <button class="nav-button nav-button-main" data-view="matches">
+              <span class="icon">⚽</span>
+              <span class="label">Matches</span>
+            </button>
+            <button class="nav-button nav-button-main" data-view="tournaments">
+              <span class="icon">🏆</span>
+              <span class="label">Tournaments</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="nav-section-title">Statistics</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="statistics">
+              <span class="icon">📈</span>
+              <span class="label">Leaderboards</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="nav-section-title">Settings</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="settings">
+              <span class="icon">⚙️</span>
+              <span class="label">Settings</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PLAYER MENU (Hidden by default) -->
+        <div style="display:none;">
+          <div class="nav-section-title">My Portal</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="my-info">
+              <span class="icon">👤</span>
+              <span class="label">My Info</span>
+            </button>
+            <button class="nav-button nav-button-main" data-view="team-info">
+              <span class="icon">🛡️</span>
+              <span class="label">Team Info</span>
+            </button>
+            <button class="nav-button nav-button-main" data-view="player-teams">
+              <span class="icon">🏟️</span>
+              <span class="label">Teams</span>
+            </button>
+            <button class="nav-button nav-button-main" data-view="player-tournaments">
+              <span class="icon">🏆</span>
+              <span class="label">Tournaments</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:none;">
+          <div class="nav-section-title">Captain</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="requests">
+              <span class="icon">📋</span>
+              <span class="label">Requests</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:none;">
+          <div class="nav-section-title">Statistics</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="statistics">
+              <span class="icon">📈</span>
+              <span class="label">Leaderboards</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:none;">
+          <div class="nav-section-title">Settings</div>
+          <div class="nav-group">
+            <button class="nav-button nav-button-main" data-view="player-settings">
+              <span class="icon">⚙️</span>
+              <span class="label">Settings</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <div class="nav-footer-row">
+            <span class="badge-pill">Season 24/25</span>
+            <button id="logout-btn" class="btn-ghost" type="button">
+              <span>Logout</span>
+              <span>↩</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="main">
+        <header class="main-header">
+          <div class="main-header-title-group">
+            <h2 class="main-title">Academy overview</h2>
+            <p class="main-subtitle">
+              Manage players, teams, and matches from a single panel.
+            </p>
+          </div>
+          <div class="header-actions">
+            <div class="search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input
+                id="global-search"
+                class="input search-input"
+                placeholder="Quick filter..."
+              />
+            </div>
+          </div>
+        </header>
+
+        <section class="content-card">
+          <!-- DASHBOARD VIEW -->
+          <div id="view-dashboard" class="view active">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Dashboard</div>
+                <div class="view-header-subtitle">Academy snapshot</div>
+              </div>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat-card">
+                <div class="stat-label">Total players</div>
+                <div class="stat-value" id="stat-total-players">–</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Teams</div>
+                <div class="stat-value" id="stat-total-teams">–</div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div class="section-title-row">
+                <h3 class="section-title">Teams summary</h3>
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Team</th>
+                      <th>Level</th>
+                      <th>Players</th>
+                      <th>City</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-teams-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- MY INFO VIEW (Player) -->
+          <div id="view-my-info" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">My Information</div>
+                <div class="view-header-subtitle">Your player profile and statistics</div>
+              </div>
+            </div>
+            <div class="section-card">
+              <div id="my-info-content"></div>
+            </div>
+          </div>
+
+          <!-- TEAM INFO VIEW (Player) -->
+          <div id="view-team-info" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Team Information</div>
+                <div class="view-header-subtitle">Details about your current team</div>
+              </div>
+            </div>
+            <div class="section-card">
+              <div id="team-info-content"></div>
+            </div>
+          </div>
+
+          <!-- PLAYER TEAMS VIEW -->
+          <div id="view-player-teams" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Teams</div>
+                <div class="view-header-subtitle">Browse and register to teams</div>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>City</th>
+                    <th>Players</th>
+                    <th>Rank</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="player-teams-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- REQUESTS VIEW (Player - Captain) -->
+          <div id="view-requests" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Team Join Requests</div>
+                <div class="view-header-subtitle">Manage requests from players to join your team</div>
+              </div>
+            </div>
+            <div class="section-card">
+              <div id="requests-content"></div>
+            </div>
+          </div>
+
+          <!-- PLAYER TOURNAMENTS VIEW -->
+          <div id="view-player-tournaments" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Tournaments</div>
+                <div class="view-header-subtitle">View tournaments and register your team</div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <div id="player-tournaments-list-container"></div>
+            </div>
+          </div>
+
+          <!-- PLAYERS VIEW -->
+          <div id="view-players" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Players</div>
+                <div class="view-header-subtitle">All registered players</div>
+              </div>
+              
+            </div>
+
+            <div id="add-player-panel" class="section-card hidden">
+              <h3 class="section-title">Add New Player</h3>
+              <form id="add-player-form" style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <input id="add-player-firstname" class="input" placeholder="First Name" required />
+                <input id="add-player-lastname" class="input" placeholder="Last Name" />
+                <input id="add-player-position" class="input" placeholder="Position" required />
+                <select id="add-player-team" class="select-input"></select>
+                <button type="submit" class="btn-small" style="grid-column: span 2;">Save</button>
+              </form>
+            </div>
+
+            <div id="players-table-container" class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="players-table-body"></tbody>
+              </table>
+            </div>  
+
+            <div id="player-detail-panel" class="section-card hidden" style="margin-top:1rem;">
+              <div class="section-title-row">
+                <h3 class="section-title">Player Details</h3>
+                <button id="close-player-detail" class="btn-small">Close</button>
+              </div>
+              <div id="player-detail-content"></div>
+            </div>
+          </div>
+
+          <!-- TEAMS VIEW -->
+          <div id="view-teams" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Teams</div>
+                <div class="view-header-subtitle">All teams</div>
+              </div>
+              <div class="view-actions">
+                <button id="toggle-add-team" class="btn-small">+ Add Team</button>
+              </div>
+            </div>
+
+            <div id="add-team-panel" class="section-card hidden">
+              <h3 class="section-title">Add New Team</h3>
+              <form id="add-team-form" style="display:grid; gap:1rem;">
+                <input id="add-team-name" class="input" placeholder="Team Name" required />
+                <input id="add-team-city" class="input" placeholder="City" required />
+                <input id="add-team-founded" class="input" type="number" placeholder="Founded Year" required />
+                <input id="add-team-rank" class="input" type="number" placeholder="Current Rank" required />
+                <div style="display:flex; gap:0.5rem;">
+                  <button type="submit" class="btn-small">Add Team</button>
+                  <button type="button" id="cancel-add-team" class="btn-small">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>City</th>    
+                    <th>Players</th>
+                    <th>Rank</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="teams-table-body"></tbody>
+              </table>
+            </div>
+
+            
+          </div>
+
+          <!-- MATCHES VIEW -->
+          <div id="view-matches" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Matches</div>
+                <div class="view-header-subtitle">Match schedule and results</div>
+              </div>
+              <div class="view-actions">
+                <button id="toggle-create-match" class="btn-small">+ Create Match</button>
+              </div>
+            </div>
+
+            <div id="create-match-panel" class="section-card hidden">
+              <h3 class="section-title">Create New Match</h3>
+              <form id="create-match-form" style="display:grid; gap:1rem;">
+                <input id="create-match-host" class="input" placeholder="Host Team Name" required />
+                <input id="create-match-guest" class="input" placeholder="Guest Team Name" required />
+                <input id="create-match-stadium" class="input" placeholder="Stadium" required />
+                <input id="create-match-datetime" class="input" type="datetime-local" required />
+                <select id="create-match-tournament" class="select-input">
+                  <option value="">No Tournament</option>
+                </select>
+                <div style="display:flex; gap:0.5rem;">
+                  <button type="submit" class="btn-small">Create</button>
+                  <button type="button" id="cancel-create-match" class="btn-small">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <div id="edit-match-panel" class="section-card hidden">
+              <h3 class="section-title">Edit Match</h3>
+              <form id="edit-match-form" style="display:grid; gap:1rem;">
+                <input id="edit-match-stadium" class="input" placeholder="Stadium" />
+                <input id="edit-match-datetime" class="input" type="datetime-local" />
+                <input id="edit-match-host-score" class="input" type="number" placeholder="Host Score" />
+                <input id="edit-match-guest-score" class="input" type="number" placeholder="Guest Score" />
+                <div style="display:flex; gap:0.5rem;">
+                  <button type="submit" class="btn-small">Save</button>
+                  <button type="button" id="cancel-edit-match" class="btn-small">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="section-card">
+              <h3 class="section-title">Upcoming Matches</h3>
+              <div id="upcoming-matches-container"></div>
+            </div>
+
+            <div class="section-card" style="margin-top:1rem;">
+              <h3 class="section-title">Past Matches</h3>
+              <div id="past-matches-container"></div>
+            </div>
+
+            <div id="match-events-panel" class="section-card hidden" style="margin-top:1rem;">
+              <div class="section-title-row">
+                <h3 class="section-title">Match Events</h3>
+                <button id="close-match-events" class="btn-small">Close</button>
+              </div>
+              <div id="match-events-content"></div>
+            </div>
+          </div>
+
+          <!-- TOURNAMENTS VIEW -->
+          <div id="view-tournaments" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Tournaments</div>
+                <div class="view-header-subtitle">Manage tournaments and view matches</div>
+              </div>
+              <div class="view-actions">
+                <button id="toggle-create-tournament" class="btn-small">+ Create Tournament</button>
+              </div>
+            </div>
+
+            <div id="create-tournament-panel" class="section-card hidden">
+              <h3 class="section-title">Create New Tournament</h3>
+              <form id="create-tournament-form" style="display:grid; gap:1rem;">
+                <input id="create-tournament-name" class="input" placeholder="Tournament Name" required />
+                <input id="create-tournament-city" class="input" placeholder="City" required />
+                <input id="create-tournament-start" class="input" type="date" required />
+                <input id="create-tournament-end" class="input" type="date" required />
+                <input id="create-tournament-1st" class="input" placeholder="First Prize" required />
+                <input id="create-tournament-2nd" class="input" placeholder="Second Prize" required />
+                <div style="display:flex; gap:0.5rem;">
+                  <button type="submit" class="btn-small">Create</button>
+                  <button type="button" id="cancel-create-tournament" class="btn-small">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="section-card">
+              <h3 class="section-title">All Tournaments</h3>
+              <div id="tournaments-list-container"></div>
+            </div>
+
+            <div id="tournament-detail-panel" class="section-card hidden" style="margin-top:1rem;">
+              <div class="section-title-row">
+                <h3 class="section-title">Tournament Details</h3>
+                <button id="close-tournament-detail" class="btn-small">Close</button>
+              </div>
+              <div id="tournament-detail-content"></div>
+            </div>
+
+            <div id="tournament-requests-panel" class="section-card hidden" style="margin-top:1rem;">
+              <div class="section-title-row">
+                <h3 id="tournament-requests-title" class="section-title">Tournament Requests</h3>
+                <button id="close-tournament-requests" class="btn-small">Close</button>
+              </div>
+              <div id="tournament-requests-content"></div>
+            </div>
+          </div>
+
+          <!-- STATISTICS VIEW -->
+          <div id="view-statistics" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">🏆 Statistics & Leaderboards</div>
+                <div class="view-header-subtitle">Top performers</div>
+              </div>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat-card">
+                <div class="stat-label">Total Goals</div>
+                <div class="stat-value" id="stat-total-goals">–</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Total Assists</div>
+                <div class="stat-value" id="stat-total-assists">–</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Top Scorer</div>
+                <div class="stat-value" id="stat-top-scorer">–</div>
+                <div class="stat-footer" id="stat-top-scorer-goals">–</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Top Assister</div>
+                <div class="stat-value" id="stat-top-assister">–</div>
+                <div class="stat-footer" id="stat-top-assister-assists">–</div>
+              </div>
+            </div>
+
+            <div class="two-column">
+              <div class="section-card">
+                <h3 class="section-title">⚽ Top Goal Scorers</h3>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th>Goals</th>
+                      </tr>
+                    </thead>
+                    <tbody id="goals-leaderboard-body"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="section-card">
+                <h3 class="section-title">🎯 Top Assists</h3>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th>Assists</th>
+                      </tr>
+                    </thead>
+                    <tbody id="assists-leaderboard-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            
+          </div>
+
+          <!-- SETTINGS VIEW (Admin) -->
+          <div id="view-settings" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Settings</div>
+                <div class="view-header-subtitle">Customize your experience</div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <h3 class="section-title">Theme Customization</h3>
+              <div class="auth-field-group">
+                <label>Accent Color</label>
+                <input id="theme-color-picker" type="color" value="#22c55e" class="input" style="height: 50px; cursor: pointer;" />
+              </div>
+              <button id="reset-theme" class="btn-small">Reset to Default</button>
+            </div>
+
+            <div class="section-card" style="margin-top:1rem;">
+              <h3 class="section-title">Change Password</h3>
+              <form id="change-password-form" style="display:flex; flex-direction:column; gap:1rem;">
+                <input id="current-password" class="input" type="password" placeholder="Current Password" required />
+                <input id="new-password" class="input" type="password" placeholder="New Password" required />
+                <input id="confirm-password" class="input" type="password" placeholder="Confirm New Password" required />
+                <div id="password-change-message" class="error-text"></div>
+                <button type="submit" class="btn-small">Change Password</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- PLAYER SETTINGS VIEW -->
+          <div id="view-player-settings" class="view">
+            <div class="view-header">
+              <div>
+                <div class="view-header-title">Settings</div>
+                <div class="view-header-subtitle">Customize your experience</div>
+              </div>
+            </div>
+
+            <div class="section-card">
+              <h3 class="section-title">Theme Customization</h3>
+              <div class="auth-field-group">
+                <label>Accent Color</label>
+                <input id="theme-color-picker-player" type="color" value="#22c55e" class="input" style="height: 50px; cursor: pointer;" />
+              </div>
+              <button id="reset-theme-player" class="btn-small">Reset to Default</button>
+            </div>
+
+            <div class="section-card" style="margin-top:1rem;">
+              <h3 class="section-title">Change Password</h3>
+              <form id="change-password-form-player" style="display:flex; flex-direction:column; gap:1rem;">
+                <input id="current-password-player" class="input" type="password" placeholder="Current Password" required />
+                <input id="new-password-player" class="input" type="password" placeholder="New Password" required />
+                <input id="confirm-password-player" class="input" type="password" placeholder="Confirm New Password" required />
+                <div id="password-change-message-player" class="error-text"></div>
+                <button type="submit" class="btn-small">Change Password</button>
+              </form>
+            </div>
+          </div>
+          <div id="team-detail-panel" class="section-card hidden" style="margin-top:1rem;">
+              <div class="section-title-row">
+                <h3 class="section-title" id="team-detail-title">Team Details</h3>
+                <button id="close-team-detail" class="btn-small">Close</button>
+              </div>
+              <div id="team-detail-content"></div>
+            </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
