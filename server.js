@@ -1201,98 +1201,107 @@ async function recalculateTournamentPoints(conn, tournamentId) {
 
 app.get("/api/statistics", async (req, res) => {
   return withConnection(async (conn) => {
-    // Top scorers
-    const topScorers = await conn.query(`
-      SELECT p.player_id, p.first_name, p.last_name, ptm.team_name, COUNT(me.event_id) as goals
-      FROM player p
-      LEFT JOIN player_team_membership ptm ON p.player_id = ptm.player_id AND ptm.end_date > NOW()
-      LEFT JOIN match_event me ON p.player_id = me.player_id AND me.event_type = 'goal'
-      GROUP BY p.player_id, p.first_name, p.last_name, ptm.team_name
-      ORDER BY goals DESC
-      LIMIT 10  
-    `);//the limit true is 10 but only show 5 in boarder since Script (script.js): The render function has a piece of code .slice(0, 5) which forces it to only show the first 5 rows.
-    
-    // Top assisters
-    const topAssisters = await conn.query(`
-      SELECT p.player_id, p.first_name, p.last_name, ptm.team_name, COUNT(me.event_id) as assists
-      FROM player p
-      LEFT JOIN player_team_membership ptm ON p.player_id = ptm.player_id AND ptm.end_date > NOW()
-      LEFT JOIN match_event me ON p.player_id = me.player_id AND me.event_type = 'assist'
-      GROUP BY p.player_id, p.first_name, p.last_name, ptm.team_name
-      ORDER BY assists DESC
-      LIMIT 10
-    `);
-    
-    // Total goals
-    const totalGoals = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'goal'");
-    const totalAssists = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'assist'");
+    try {
+      // Top scorers
+      const topScorers = await conn.query(`
+        SELECT p.player_id, p.first_name, p.last_name, ptm.team_name, COUNT(me.event_id) as goals
+        FROM player p
+        LEFT JOIN player_team_membership ptm ON p.player_id = ptm.player_id AND ptm.end_date > NOW()
+        LEFT JOIN match_event me ON p.player_id = me.player_id AND me.event_type = 'goal'
+        GROUP BY p.player_id, p.first_name, p.last_name, ptm.team_name
+        ORDER BY goals DESC
+        LIMIT 10
+      `);
 
-    // Team leaderboard - Get all teams with their wins, losses, and draws
-    const allTeams = await conn.query("SELECT team_name FROM team");
+      // Top assisters
+      const topAssisters = await conn.query(`
+        SELECT p.player_id, p.first_name, p.last_name, ptm.team_name, COUNT(me.event_id) as assists
+        FROM player p
+        LEFT JOIN player_team_membership ptm ON p.player_id = ptm.player_id AND ptm.end_date > NOW()
+        LEFT JOIN match_event me ON p.player_id = me.player_id AND me.event_type = 'assist'
+        GROUP BY p.player_id, p.first_name, p.last_name, ptm.team_name
+        ORDER BY assists DESC
+        LIMIT 10
+      `);
 
-    const teamLeaderboard = [];
+      // Total goals
+      const totalGoals = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'goal'");
+      const totalAssists = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'assist'");
 
-    for (const team of allTeams) {
-      // Count wins
-      const wins = await conn.query(
-        `SELECT COUNT(*) as count FROM matches
-         WHERE (host_team_name = ? AND host_team_score > guest_team_score)
-            OR (guest_team_name = ? AND guest_team_score > host_team_score)`,
-        [team.team_name, team.team_name]
-      );
+      // Team leaderboard - Get all teams with their wins, losses, and draws
+      const allTeams = await conn.query("SELECT team_name FROM team");
 
-      // Count losses
-      const losses = await conn.query(
-        `SELECT COUNT(*) as count FROM matches
-         WHERE (host_team_name = ? AND host_team_score < guest_team_score)
-            OR (guest_team_name = ? AND guest_team_score < host_team_score)`,
-        [team.team_name, team.team_name]
-      );
+      const teamLeaderboard = [];
 
-      // Count draws
-      const draws = await conn.query(
-        `SELECT COUNT(*) as count FROM matches
-         WHERE (host_team_name = ? OR guest_team_name = ?)
-            AND host_team_score = guest_team_score
-            AND match_date < NOW()`,
-        [team.team_name, team.team_name]
-      );
+      for (const team of allTeams) {
+        // Count wins
+        const wins = await conn.query(
+          `SELECT COUNT(*) as count FROM matches
+           WHERE (host_team_name = ? AND host_team_score > guest_team_score)
+              OR (guest_team_name = ? AND guest_team_score > host_team_score)`,
+          [team.team_name, team.team_name]
+        );
 
-      // Count player count
-      const playerCount = await conn.query(
-        "SELECT COUNT(*) as count FROM player_team_membership WHERE team_name = ? AND end_date > NOW()",
-        [team.team_name]
-      );
+        // Count losses
+        const losses = await conn.query(
+          `SELECT COUNT(*) as count FROM matches
+           WHERE (host_team_name = ? AND host_team_score < guest_team_score)
+              OR (guest_team_name = ? AND guest_team_score < host_team_score)`,
+          [team.team_name, team.team_name]
+        );
 
-      teamLeaderboard.push({
-        teamName: team.team_name,
-        wins: wins[0].count,
-        losses: losses[0].count,
-        draws: draws[0].count,
-        playerCount: playerCount[0].count
+        // Count draws
+        const draws = await conn.query(
+          `SELECT COUNT(*) as count FROM matches
+           WHERE (host_team_name = ? OR guest_team_name = ?)
+              AND host_team_score = guest_team_score
+              AND match_date < NOW()`,
+          [team.team_name, team.team_name]
+        );
+
+        // Count player count
+        const playerCount = await conn.query(
+          "SELECT COUNT(*) as count FROM player_team_membership WHERE team_name = ? AND end_date > NOW()",
+          [team.team_name]
+        );
+
+        teamLeaderboard.push({
+          teamName: team.team_name,
+          wins: wins[0].count,
+          losses: losses[0].count,
+          draws: draws[0].count,
+          playerCount: playerCount[0].count
+        });
+      }
+
+      // Sort teams by wins (descending)
+      teamLeaderboard.sort((a, b) => b.wins - a.wins);
+
+      res.json({
+        totalGoals: totalGoals[0].total || 0,
+        totalAssists: totalAssists[0].total || 0,
+        topScorers: topScorers.map(p => ({
+          id: p.player_id,
+          name: `${p.first_name} ${p.last_name || ""}`,
+          goals: p.goals,
+          teamName: p.team_name
+        })),
+        topAssisters: topAssisters.map(p => ({
+          id: p.player_id,
+          name: `${p.first_name} ${p.last_name || ""}`,
+          assists: p.assists,
+          teamName: p.team_name
+        })),
+        teamStats: teamLeaderboard
+      });
+    } catch (error) {
+      console.error("Statistics endpoint error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch statistics",
+        error: error.message
       });
     }
-
-    // Sort teams by wins (descending)
-    teamLeaderboard.sort((a, b) => b.wins - a.wins);
-
-    res.json({
-      totalGoals: totalGoals[0].total || 0,
-      totalAssists: totalAssists[0].total || 0,
-      topScorers: topScorers.map(p => ({
-        id: p.player_id,
-        name: `${p.first_name} ${p.last_name || ""}`,
-        goals: p.goals,
-        teamName: p.team_name
-      })),
-      topAssisters: topAssisters.map(p => ({
-        id: p.player_id,
-        name: `${p.first_name} ${p.last_name || ""}`,
-        assists: p.assists,
-        teamName: p.team_name
-      })),
-      teamStats: teamLeaderboard
-    });
   });
 });
 
