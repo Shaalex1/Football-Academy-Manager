@@ -356,7 +356,6 @@ app.get("/api/teams", async (req, res) => {
         name: t.team_name,
         foundedYear: t.founded_year,
         city: t.city,
-        currentRank: t.current_rank,
         playerCount: members[0].count
       };
     }));
@@ -411,7 +410,6 @@ app.get("/api/teams/:name", async (req, res) => {
       name: team.team_name,
       foundedYear: team.founded_year,
       city: team.city,
-      currentRank: team.current_rank,
       matchesPlayed: matches[0].count,
       wins: wins[0].count,
       tournaments: tournaments.map(t => ({
@@ -434,7 +432,7 @@ app.get("/api/teams/:name", async (req, res) => {
 
 // Add a new team (Admin only)
 app.post("/api/teams", async (req, res) => {
-  const { name, foundedYear, city, currentRank } = req.body;
+  const { name, foundedYear, city } = req.body;
 
   if (!name) {
     return res.status(400).json({ success: false, message: "Team name is required" });
@@ -453,8 +451,8 @@ app.post("/api/teams", async (req, res) => {
       }
 
       await conn.query(
-        "INSERT INTO team (team_name, founded_year, city, current_rank) VALUES (?, ?, ?, ?)",
-        [name, foundedYear || new Date().getFullYear(), city || "", currentRank || 0]
+        "INSERT INTO team (team_name, founded_year, city) VALUES (?, ?, ?)",
+        [name, foundedYear || new Date().getFullYear(), city || ""]
       );
 
       res.json({ success: true });
@@ -1197,42 +1195,6 @@ async function recalculateTournamentPoints(conn, tournamentId) {
       [points, tournamentId, team.team_name]
     );
   }
-
-  // Also recalculate global team ranks based on total wins
-  await recalculateAllTeamRanks(conn);
-}
-
-// Helper function to recalculate team ranks based on total wins across all matches
-async function recalculateAllTeamRanks(conn) {
-  // Get all teams with their win counts
-  const allTeams = await conn.query("SELECT team_name FROM team");
-
-  const teamWins = [];
-
-  for (const team of allTeams) {
-    const wins = await conn.query(
-      `SELECT COUNT(*) as count FROM matches
-       WHERE (host_team_name = ? AND host_team_score > guest_team_score)
-          OR (guest_team_name = ? AND guest_team_score > host_team_score)`,
-      [team.team_name, team.team_name]
-    );
-
-    teamWins.push({
-      teamName: team.team_name,
-      wins: wins[0].count
-    });
-  }
-
-  // Sort teams by wins (descending)
-  teamWins.sort((a, b) => b.wins - a.wins);
-
-  // Update ranks (rank 1 for most wins, etc.)
-  for (let i = 0; i < teamWins.length; i++) {
-    await conn.query(
-      "UPDATE team SET current_rank = ? WHERE team_name = ?",
-      [i + 1, teamWins[i].teamName]
-    );
-  }
 }
 
 // ==================== STATISTICS ====================
@@ -1264,12 +1226,56 @@ app.get("/api/statistics", async (req, res) => {
     // Total goals
     const totalGoals = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'goal'");
     const totalAssists = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'assist'");
-    
-    // Team stats
-    const teamStats = await conn.query(`
-      SELECT * FROM team_player_stats
-    `);
-    
+
+    // Team leaderboard - Get all teams with their wins, losses, and draws
+    const allTeams = await conn.query("SELECT team_name FROM team");
+
+    const teamLeaderboard = [];
+
+    for (const team of allTeams) {
+      // Count wins
+      const wins = await conn.query(
+        `SELECT COUNT(*) as count FROM matches
+         WHERE (host_team_name = ? AND host_team_score > guest_team_score)
+            OR (guest_team_name = ? AND guest_team_score > host_team_score)`,
+        [team.team_name, team.team_name]
+      );
+
+      // Count losses
+      const losses = await conn.query(
+        `SELECT COUNT(*) as count FROM matches
+         WHERE (host_team_name = ? AND host_team_score < guest_team_score)
+            OR (guest_team_name = ? AND guest_team_score < host_team_score)`,
+        [team.team_name, team.team_name]
+      );
+
+      // Count draws
+      const draws = await conn.query(
+        `SELECT COUNT(*) as count FROM matches
+         WHERE (host_team_name = ? OR guest_team_name = ?)
+            AND host_team_score = guest_team_score
+            AND match_date < NOW()`,
+        [team.team_name, team.team_name]
+      );
+
+      // Count player count
+      const playerCount = await conn.query(
+        "SELECT COUNT(*) as count FROM player_team_membership WHERE team_name = ? AND end_date > NOW()",
+        [team.team_name]
+      );
+
+      teamLeaderboard.push({
+        teamName: team.team_name,
+        wins: wins[0].count,
+        losses: losses[0].count,
+        draws: draws[0].count,
+        playerCount: playerCount[0].count
+      });
+    }
+
+    // Sort teams by wins (descending)
+    teamLeaderboard.sort((a, b) => b.wins - a.wins);
+
     res.json({
       totalGoals: totalGoals[0].total || 0,
       totalAssists: totalAssists[0].total || 0,
@@ -1285,10 +1291,7 @@ app.get("/api/statistics", async (req, res) => {
         assists: p.assists,
         teamName: p.team_name
       })),
-      teamStats: teamStats.map(t => ({
-        teamName: t.team_name,
-        playerCount: t.player_count || 0
-      }))
+      teamStats: teamLeaderboard
     });
   });
 });

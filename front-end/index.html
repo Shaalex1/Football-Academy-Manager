@@ -403,7 +403,6 @@
                     <th>Name</th>
                     <th>City</th>
                     <th>Players</th>
-                    <th>Rank</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -503,7 +502,6 @@
                 <input id="add-team-name" class="input" placeholder="Team Name" required />
                 <input id="add-team-city" class="input" placeholder="City" required />
                 <input id="add-team-founded" class="input" type="number" placeholder="Founded Year" required />
-                <input id="add-team-rank" class="input" type="number" placeholder="Current Rank" required />
                 <div style="display:flex; gap:0.5rem;">
                   <button type="submit" class="btn-small">Add Team</button>
                   <button type="button" id="cancel-add-team" class="btn-small">Cancel</button>
@@ -516,9 +514,8 @@
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>City</th>    
+                    <th>City</th>
                     <th>Players</th>
-                    <th>Rank</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -707,7 +704,25 @@
               </div>
             </div>
 
-            
+            <div class="section-card">
+              <h3 class="section-title">🏆 Team Leaderboard</h3>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Team</th>
+                      <th>Wins</th>
+                      <th>Losses</th>
+                      <th>Draws</th>
+                      <th>Players</th>
+                    </tr>
+                  </thead>
+                  <tbody id="team-stats-body"></tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
 
           <!-- SETTINGS VIEW (Admin) -->
@@ -720,11 +735,7 @@
             </div>
 
             <div class="section-card">
-              <h3 class="section-title">Theme Customization</h3>
-              <div class="auth-field-group">
-                <label>Accent Color</label>
-                <input id="theme-color-picker" type="color" value="#22c55e" class="input" style="height: 50px; cursor: pointer;" />
-              </div>
+              <h3 class="section-title">Theme</h3>
               <button id="reset-theme" class="btn-small">Reset to Default</button>
             </div>
 

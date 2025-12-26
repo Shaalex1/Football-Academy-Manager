@@ -318,7 +318,6 @@ async function renderDashboard() {
     const count = players.filter(p => p.teamName === t.name).length;
     tbody.innerHTML += `<tr>
       <td>${t.name}</td>
-      <td>${t.currentRank || "-"}</td>
       <td>${count}</td>
       <td>${t.city || "-"}</td>
     </tr>`;
@@ -412,7 +411,6 @@ async function renderTeamInfo() {
           <div><strong>City:</strong> ${teamData.city}</div>
           <div><strong>Founded:</strong> ${teamData.foundedYear}</div>
           <div><strong>Players:</strong> ${teamData.players.length}</div>
-          <div><strong>Current Rank:</strong> ${teamData.currentRank || "N/A"}</div>
           <div><strong>Wins:</strong> ${teamData.wins || 0}</div>
           <div><strong>Matches Played:</strong> ${teamData.matchesPlayed || 0}</div>
           <div><strong>Win Rate:</strong> ${teamData.matchesPlayed > 0 ? ((teamData.wins / teamData.matchesPlayed) * 100).toFixed(1) + '%' : '0%'}</div>
@@ -515,7 +513,6 @@ async function renderTeamsTable(filter = "") {
       <td>${team.name}</td>
       <td>${team.city}</td>
       <td>${team.playerCount}</td>
-      <td>${team.currentRank || "-"}</td>
     `;
     const tdAction = document.createElement("td");
     const viewBtn = document.createElement("button");
@@ -577,7 +574,6 @@ async function showTeamDetails(team) {
         <div><strong>City:</strong> ${details.city}</div>
         <div><strong>Founded:</strong> ${details.foundedYear}</div>
         <div><strong>Players:</strong> ${details.players.length}</div>
-        <div><strong>Rank:</strong> ${details.currentRank || "N/A"}</div>
       </div>
       <hr style="border:0; border-top:1px solid #333; margin:1rem 0;">
       <h5>Roster:</h5>
@@ -648,7 +644,6 @@ async function renderPlayerTeamsTable(filter = "") {
       <td>${team.name}</td>
       <td>${team.city}</td>
       <td>${team.playerCount}</td>
-      <td>${team.currentRank || "-"}</td>
     `;
     const tdAction = document.createElement("td");
     const viewBtn = document.createElement("button");
@@ -1444,9 +1439,8 @@ async function createTeam(e) {
   const name = document.getElementById("add-team-name").value.trim();
   const city = document.getElementById("add-team-city").value.trim();
   const foundedYear = document.getElementById("add-team-founded").value;
-  const currentRank = document.getElementById("add-team-rank").value;
 
-  if (!name || !city || !foundedYear || !currentRank) {
+  if (!name || !city || !foundedYear) {
     alert("Please fill all fields");
     return;
   }
@@ -1455,8 +1449,7 @@ async function createTeam(e) {
     await apiCall("/teams", "POST", {
       name,
       city,
-      foundedYear: parseInt(foundedYear),
-      currentRank: parseInt(currentRank)
+      foundedYear: parseInt(foundedYear)
     });
 
     alert("Team created successfully!");
@@ -1516,12 +1509,13 @@ async function renderStatistics() {
   const teamBody = document.getElementById("team-stats-body");
   if (teamBody) {
     teamBody.innerHTML = "";
-    stats.teamStats.forEach(t => {
+    stats.teamStats.forEach((t, i) => {
       teamBody.innerHTML += `<tr>
+        <td>${i + 1}</td>
         <td>${t.teamName}</td>
-        <td>-</td>
-        <td>-</td>
-        <td>-</td>
+        <td>${t.wins}</td>
+        <td>${t.losses}</td>
+        <td>${t.draws}</td>
         <td>${t.playerCount}</td>
       </tr>`;
     });
