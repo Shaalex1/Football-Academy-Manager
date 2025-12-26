@@ -314,14 +314,47 @@ async function renderDashboard() {
     ? teams.filter(t => t.name === currentUser.teamName)
     : teams;
 
-  teamsToShow.forEach(t => {
-    const count = players.filter(p => p.teamName === t.name).length;
-    tbody.innerHTML += `<tr>
-      <td>${t.name}</td>
-      <td>${count}</td>
-      <td>${t.city || "-"}</td>
-    </tr>`;
-  });
+  // Try to fetch statistics to get team rankings
+  try {
+    const stats = await apiCall("/statistics");
+    const teamStats = stats.teamStats || [];
+
+    // Create a map of team name to rank
+    const teamRankMap = new Map();
+    teamStats.forEach((ts, index) => {
+      teamRankMap.set(ts.teamName, index + 1);
+    });
+
+    // Render teams sorted by rank
+    const sortedTeams = [...teamsToShow].sort((a, b) => {
+      const rankA = teamRankMap.get(a.name) || 999;
+      const rankB = teamRankMap.get(b.name) || 999;
+      return rankA - rankB;
+    });
+
+    sortedTeams.forEach(t => {
+      const count = players.filter(p => p.teamName === t.name).length;
+      const rank = teamRankMap.get(t.name) || "-";
+      tbody.innerHTML += `<tr>
+        <td>${t.name}</td>
+        <td>${rank}</td>
+        <td>${count}</td>
+        <td>${t.city || "-"}</td>
+      </tr>`;
+    });
+  } catch (err) {
+    console.error("Error fetching team rankings:", err);
+    // Fallback: show teams without ranking
+    teamsToShow.forEach(t => {
+      const count = players.filter(p => p.teamName === t.name).length;
+      tbody.innerHTML += `<tr>
+        <td>${t.name}</td>
+        <td>-</td>
+        <td>${count}</td>
+        <td>${t.city || "-"}</td>
+      </tr>`;
+    });
+  }
 }
 
 async function renderMyInfo() {
