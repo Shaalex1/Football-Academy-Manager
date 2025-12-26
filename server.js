@@ -1202,7 +1202,16 @@ async function recalculateTournamentPoints(conn, tournamentId) {
 app.get("/api/statistics", async (req, res) => {
   return withConnection(async (conn) => {
     try {
+      console.log("Starting statistics endpoint...");
+
+      // Total goals and assists
+      console.log("Fetching total goals and assists...");
+      const totalGoals = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'goal'");
+      const totalAssists = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'assist'");
+      console.log("Total goals and assists fetched successfully");
+
       // Top scorers
+      console.log("Fetching top scorers...");
       const topScorers = await conn.query(`
         SELECT p.player_id, p.first_name, p.last_name, ptm.team_name, COUNT(me.event_id) as goals
         FROM player p
@@ -1212,8 +1221,10 @@ app.get("/api/statistics", async (req, res) => {
         ORDER BY goals DESC
         LIMIT 10
       `);
+      console.log("Top scorers fetched successfully");
 
       // Top assisters
+      console.log("Fetching top assisters...");
       const topAssisters = await conn.query(`
         SELECT p.player_id, p.first_name, p.last_name, ptm.team_name, COUNT(me.event_id) as assists
         FROM player p
@@ -1223,17 +1234,18 @@ app.get("/api/statistics", async (req, res) => {
         ORDER BY assists DESC
         LIMIT 10
       `);
-
-      // Total goals
-      const totalGoals = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'goal'");
-      const totalAssists = await conn.query("SELECT COUNT(*) as total FROM match_event WHERE event_type = 'assist'");
+      console.log("Top assisters fetched successfully");
 
       // Team leaderboard - Get all teams with their wins, losses, and draws
+      console.log("Fetching team leaderboard...");
       const allTeams = await conn.query("SELECT team_name FROM team");
+      console.log(`Found ${allTeams.length} teams`);
 
       const teamLeaderboard = [];
 
       for (const team of allTeams) {
+        console.log(`Processing team: ${team.team_name}`);
+
         // Count wins
         const wins = await conn.query(
           `SELECT COUNT(*) as count FROM matches
@@ -1276,7 +1288,9 @@ app.get("/api/statistics", async (req, res) => {
 
       // Sort teams by wins (descending)
       teamLeaderboard.sort((a, b) => b.wins - a.wins);
+      console.log("Team leaderboard processed successfully");
 
+      console.log("Sending statistics response");
       res.json({
         totalGoals: totalGoals[0].total || 0,
         totalAssists: totalAssists[0].total || 0,
@@ -1296,10 +1310,12 @@ app.get("/api/statistics", async (req, res) => {
       });
     } catch (error) {
       console.error("Statistics endpoint error:", error);
+      console.error("Error stack:", error.stack);
       res.status(500).json({
         success: false,
         message: "Failed to fetch statistics",
-        error: error.message
+        error: error.message,
+        stack: error.stack
       });
     }
   });
