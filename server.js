@@ -1277,33 +1277,36 @@ app.get("/api/statistics", async (req, res) => {
           [team.team_name]
         );
 
-        teamLeaderboard.push({
+        const teamData = {
           teamName: team.team_name,
-          wins: wins[0].count,
-          losses: losses[0].count,
-          draws: draws[0].count,
-          playerCount: playerCount[0].count
-        });
+          wins: Number(wins[0].count),
+          losses: Number(losses[0].count),
+          draws: Number(draws[0].count),
+          playerCount: Number(playerCount[0].count)
+        };
+        console.log(`Team ${team.team_name}: wins=${teamData.wins} (type: ${typeof teamData.wins})`);
+        teamLeaderboard.push(teamData);
       }
 
       // Sort teams by wins (descending)
+      console.log("About to sort. First team wins type:", typeof teamLeaderboard[0]?.wins);
       teamLeaderboard.sort((a, b) => b.wins - a.wins);
       console.log("Team leaderboard processed successfully");
 
       console.log("Sending statistics response");
       res.json({
-        totalGoals: totalGoals[0].total || 0,
-        totalAssists: totalAssists[0].total || 0,
+        totalGoals: Number(totalGoals[0].total) || 0,
+        totalAssists: Number(totalAssists[0].total) || 0,
         topScorers: topScorers.map(p => ({
           id: p.player_id,
           name: `${p.first_name} ${p.last_name || ""}`,
-          goals: p.goals,
+          goals: Number(p.goals),
           teamName: p.team_name
         })),
         topAssisters: topAssisters.map(p => ({
           id: p.player_id,
           name: `${p.first_name} ${p.last_name || ""}`,
-          assists: p.assists,
+          assists: Number(p.assists),
           teamName: p.team_name
         })),
         teamStats: teamLeaderboard
