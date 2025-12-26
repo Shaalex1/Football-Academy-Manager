@@ -8,7 +8,10 @@ const pool = mariadb.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || "football_academy",
   port: parseInt(process.env.DB_PORT) || 3306,
-  connectionLimit: 5
+  connectionLimit: 5,
+  ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 module.exports = Object.freeze({ pool: pool });
