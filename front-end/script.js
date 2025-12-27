@@ -1200,9 +1200,20 @@ async function renderTournaments() {
 async function viewTournamentDetails(tournamentId) {
   try {
     const tournament = await apiCall(`/tournaments/${tournamentId}`);
-    const panel = document.getElementById("tournament-detail-panel");
-    const content = document.getElementById("tournament-detail-content");
-    
+
+    // Determine which panel to use based on user role
+    const isPlayer = currentUser && currentUser.role === "player";
+    const panelId = isPlayer ? "player-tournament-detail-panel" : "tournament-detail-panel";
+    const contentId = isPlayer ? "player-tournament-detail-content" : "tournament-detail-content";
+
+    const panel = document.getElementById(panelId);
+    const content = document.getElementById(contentId);
+
+    if (!panel || !content) {
+      console.error(`Panel or content not found: ${panelId}, ${contentId}`);
+      return;
+    }
+
     content.innerHTML = `
       <div style="padding:1rem;">
         <h4>${tournament.tournament_name}</h4>
@@ -1231,7 +1242,7 @@ async function viewTournamentDetails(tournamentId) {
         }
       </div>
     `;
-    
+
     panel.classList.remove("hidden");
   } catch (err) {
     alert("Error loading tournament: " + err.message);
@@ -1732,6 +1743,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeTournamentBtn) {
     closeTournamentBtn.addEventListener("click", () => {
       document.getElementById("tournament-detail-panel").classList.add("hidden");
+    });
+  }
+
+  const closePlayerTournamentBtn = document.getElementById("player-close-tournament-detail");
+  if (closePlayerTournamentBtn) {
+    closePlayerTournamentBtn.addEventListener("click", () => {
+      document.getElementById("player-tournament-detail-panel").classList.add("hidden");
     });
   }
 
