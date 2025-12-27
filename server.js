@@ -56,23 +56,32 @@ app.post("/api/auth/player/login", async (req, res) => {
     }
     
     const player = rows[0];
+
+    // Convert BigInt player_id to Number
+    const playerId = player.player_id ? Number(player.player_id) : null;
+
+    if (!playerId) {
+      console.error("Error: player_id is null or undefined for player:", player.email);
+      return res.status(500).json({ success: false, message: "Database error: Invalid player ID" });
+    }
+
     // Get team membership
     const membership = await conn.query(
       "SELECT team_name, role FROM player_team_membership WHERE player_id = ? AND end_date > NOW() ORDER BY start_date DESC LIMIT 1",
-      [player.player_id]
+      [playerId]
     );
-    
-    res.json({ 
-      success: true, 
-      user: { 
-        id: player.player_id,
+
+    res.json({
+      success: true,
+      user: {
+        id: playerId,
         name: `${player.first_name} ${player.last_name}`,
         role: "player",
         teamName: membership.length > 0 ? membership[0].team_name : null,
         isCaptain: membership.length > 0 && membership[0].role === 'Captain',
         position: player.position,
         email: player.email
-      } 
+      }
     });
   });
 });
@@ -356,7 +365,7 @@ app.get("/api/teams", async (req, res) => {
         name: t.team_name,
         foundedYear: t.founded_year,
         city: t.city,
-        playerCount: members[0].count
+        playerCount: Number(members[0].count)
       };
     }));
     
@@ -410,8 +419,8 @@ app.get("/api/teams/:name", async (req, res) => {
       name: team.team_name,
       foundedYear: team.founded_year,
       city: team.city,
-      matchesPlayed: matches[0].count,
-      wins: wins[0].count,
+      matchesPlayed: Number(matches[0].count),
+      wins: Number(wins[0].count),
       tournaments: tournaments.map(t => ({
         id: t.tournament_id,
         name: t.tournament_name,
@@ -561,7 +570,13 @@ app.post("/api/teams/remove-player", async (req, res) => {
 
 app.post("/api/team-requests", async (req, res) => {
   const { playerId, teamName } = req.body;
-  
+
+  // Validate playerId
+  if (!playerId) {
+    console.error("Error: playerId is null or undefined in team registration request");
+    return res.status(400).json({ success: false, message: "Invalid player ID. Please logout and login again." });
+  }
+
   return withConnection(async (conn) => {
     // Check if player already in a team
     const existing = await conn.query(
@@ -585,7 +600,7 @@ app.post("/api/team-requests", async (req, res) => {
     if (teamIsEmpty) {
       await conn.query(
         "INSERT INTO player_team_membership ( player_id, team_name, start_date, end_date, contract_type, role) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 YEAR), 'Professional', 'Captain')",
-        [ playerId, teamName]
+        [playerId, teamName]
       );
       
       return res.json({ 
