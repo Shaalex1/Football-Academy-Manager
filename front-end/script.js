@@ -578,6 +578,8 @@ async function renderTeamsTable(filter = "") {
 }
 
 async function registerToTeam(teamName) {
+  console.log("currentUser:", currentUser);  // Add this line
+  console.log("currentUser.id:", currentUser.id);  // Add this line
   if (currentUser.teamName) {
     alert("You are already registered in a team. Please leave your current team first.");
     return;

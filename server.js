@@ -756,8 +756,8 @@ app.get("/api/tournaments", async (req, res) => {
         endDate: t.end_date,
         firstPrize: t.first_prize,
         secondPrize: t.second_prize,
-        matchCount: matches[0].count,
-        teamCount: teams[0].count
+        matchCount: Number(matches[0].count),
+        teamCount: Number(teams[0].count)
       };
     }));
     
@@ -777,34 +777,38 @@ app.get("/api/tournaments/:id", async (req, res) => {
     }
     
     const matchesRaw = await conn.query(
-      "SELECT * FROM matches WHERE tournament_id = ? ORDER BY match_date",
+      "SELECT match_id, match_date, stadium, host_team_name, guest_team_name, host_team_score, guest_team_score FROM matches WHERE tournament_id = ? ORDER BY match_date",
       [req.params.id]
     );
 
     // Map matches - team names are now stored directly in the table
     const matches = matchesRaw.map(m => ({
-      id: m.match_id,
+      id: Number(m.match_id),
       date: m.match_date,
       stadium: m.stadium,
       hostTeamName: m.host_team_name || "TBD",
       guestTeamName: m.guest_team_name || "TBD",
-      hostScore: m.host_team_score || 0,
-      guestScore: m.guest_team_score || 0
+      hostScore: Number(m.host_team_score) || 0,
+      guestScore: Number(m.guest_team_score) || 0
     }));
 
     const teams = await conn.query(
-      "SELECT trr.*, t.city FROM tournament_registration_request trr JOIN team t ON trr.team_name = t.team_name WHERE trr.tournament_id = ? AND trr.status = 'accepted' ORDER BY trr.points DESC",
+      "SELECT trr.team_name, trr.points, t.city FROM tournament_registration_request trr JOIN team t ON trr.team_name = t.team_name WHERE trr.tournament_id = ? AND trr.status = 'accepted' ORDER BY trr.points DESC",
       [req.params.id]
     );
 
     res.json({
-      ...tournament[0],
-      id: tournament[0].tournament_id,
-      name: tournament[0].tournament_name,
+      tournament_id: Number(tournament[0].tournament_id),
+      tournament_name: tournament[0].tournament_name,
+      city: tournament[0].city,
+      start_date: tournament[0].start_date,
+      end_date: tournament[0].end_date,
+      first_prize: tournament[0].first_prize,
+      second_prize: tournament[0].second_prize,
       matches: matches,
       teams: teams.map(t => ({
         name: t.team_name,
-        points: t.points,
+        points: Number(t.points) || 0,
         city: t.city
       }))
     });
