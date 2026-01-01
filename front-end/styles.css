@@ -298,16 +298,12 @@ label {
 }
 
 .auth-footer {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
   font-size: 0.78rem;
   color: var(--muted);
   text-align: center;
-  max-width: 420px;
-  width: 100%;
-  padding: 0 1.5rem;
   line-height: 1.5;
 }
 
@@ -374,9 +370,9 @@ label {
     font-size: 1.5rem;
   }
   .auth-footer {
-    bottom: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
     font-size: 0.7rem;
-    padding: 0 1rem;
   }
 }
 
